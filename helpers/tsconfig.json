@@ -5,9 +5,8 @@
         "lib": [
             "DOM"
         ],
-        "outDir": "../public/js",
     },
     "include": [
-        "ts/**/*"
+        "*"
     ]
 }
