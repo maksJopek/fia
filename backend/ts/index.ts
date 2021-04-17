@@ -5,6 +5,7 @@ import * as dotenv from "dotenv";
 import login from "./api/login";
 import startPoint from "./api/startPoint";
 import readyStateToggle from "./api/readyStateToggle";
+import getCurrentGameState from "./api/getCurrentGameState";
 
 dotenv.config();
 const app = express();
@@ -23,6 +24,7 @@ app.get("/startPoint", startPoint)
 
 app.post("/login", login);
 app.post("/readyStateToggle", readyStateToggle);
+app.post("/getCurrentGameState", getCurrentGameState);
 
 
 app.listen(PORT, () => {

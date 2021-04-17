@@ -1,11 +1,19 @@
 import { Request, Response } from "express";
-import { makeQuery, checkApiRes } from "../../../helpers/helpers";
+import { makeQuery } from "../../../helpers/helpersBack";
+import startGame from "../startGame";
 
 export default async function (req: Request, res: Response) {
-    if (req.session === undefined || req.body.state == undefined) {
-        res.send(/* html */ `<script>alert("Something went wrong, try to reload the page")</script>`);
+    if (req.session === undefined || req.body.state === undefined) {
+        res.status(500);
+        res.send("");
         return;
     }
-    makeQuery("UPDATE `fia` SET `playersAreReady`=`playersAreReady`+" + (req.body.state ? 1 : 0)
-        + " WHERE `id`=" + req.session.gid, []).then(dbRes => checkApiRes(dbRes, res));
+    await makeQuery("UPDATE `fia` SET `playersAreReady`=`playersAreReady`+" + (req.body.state ? 1 : -1)
+        + " WHERE `id`=" + req.session.gid, []);
+    let start = (
+        await makeQuery('SELECT playersAreReady=playersCount and playersCount > 1 "start" FROM `fia` WHERE `id`= ?',
+        [req.session.gid])
+    )[0].start;
+    if(start === 1)
+        startGame(req, res);
 }

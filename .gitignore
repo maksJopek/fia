@@ -1,6 +1,8 @@
 ## MINE
 bootstrap.min.css
+bootstrap.min.css.map
 *.js
+
 ## Github 
 # Logs
 logs
