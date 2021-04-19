@@ -13,6 +13,7 @@ export default class StartGame {
   
   chequers: Array<Chequer> = [];
   gameBoard: GameBoard = [];
+  gmString = "[\n";
 
   constructor(data: Data) {
     this.init(data);
@@ -25,16 +26,15 @@ export default class StartGame {
 
     this.setOpponents(data);
 
-    [this.canvas, this.ctx] = this.getCanvasAndCtx();
-    this.canvas.onclick = this.canvasClickHandler;
+    this.canvas.onclick = e => this.canvasClickHandler(e);
 
     this.img = await this.loadImage("https://jopek.eu/maks/szkola/apkKli/fiaFiles/fia.png");
     
     await this.getData();
-    // this.ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, this.canvas.width, this.canvas.height);
-    // this.drawChequer({ x: 4, y: 1, color: 1 });
+    this.ctx.drawImage(this.img, 0, 0, this.img.width, this.img.height, 0, 0, this.canvas.width, this.canvas.height);
+    this.drawChequer({ x: 4, y: 1, color: 1 });
 
-    this.interval = setInterval(this.getData, 2000);
+    // this.interval = setInterval(this.getData, 2000);
   }
 
   getCanvasAndCtx(): [HTMLCanvasElement, CanvasRenderingContext2D] {
@@ -50,13 +50,17 @@ export default class StartGame {
     let tds = (document.getElementsByClassName("player-name") as HTMLCollectionOf<HTMLElement>),
       i = 0;
     
-    for(let player of data) {
-      tds[i].classList.add("bg-" + this.colors[player.color]);
+    for (let player of data) {
+      if (player.ready === true)
+        tds[i].classList.add("bg-" + this.colors[player.color]);
+      else
+        tds[i].classList.add("bg-secondary");
+
       tds[i].innerText = player.name;
       console.log("player, i", player, i);
       i++;
     }
-    for(; i < 4; i++) {
+    for (; i < 4; i++) {
       console.log("i", i);
       tds[i].classList.add("bg-secondary");
       tds[i].innerText = "?";
@@ -72,6 +76,14 @@ export default class StartGame {
       x: e.clientX - this.canvas.offsetLeft,
       y: e.clientY - this.canvas.offsetTop
     };
+
+    if (Math.round((mousePos.x - 30) / 60) == 0 && Math.round((mousePos.y - 28) / 60) == 0) {
+      console.log(this.gmString + "]");
+      this.gmString = "[\n"
+    }
+    else
+      this.gmString += JSON.stringify({ x: Math.round((mousePos.x - 30) / 60), y: Math.round((mousePos.y - 28) / 60) }) + ",\n";
+
     this.chequers.forEach(chequer => {
       if (this.isIntersect(mousePos, chequer)) {
         alert('click on circle: ' + chequer);
@@ -111,6 +123,7 @@ export default class StartGame {
 
   async getData() {
     let data = await Helpers.mFetch("/getCurrentGameState", {});
+    // this.setOpponents(JSON.parse(data.data));
     // TODO: assign data to this.gameBoard and draw it
     // TODO: add D6 dice
     // TODO: if currentPLayer === true, call to logic or calc logic here
