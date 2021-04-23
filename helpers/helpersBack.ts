@@ -1,10 +1,20 @@
 import fetch from "node-fetch";
 import { Response } from "express";
 import Helpers from "./helpers";
+import { global } from "../backend/ts/index";
 
 export { Helpers };
-export async function makeQuery(query: string, params: Array<any>): Promise<any> {
-  let t = await (
+export const API_RES = {
+  success: '{"success": true}',
+  failure: '{"success": false}',
+};
+export async function makeQuery(query: string, params: Array<any>): Promise<Array<any>> {
+  // console.log("params are ", JSON.stringify({
+  //   apiKey: process.env.API_KEY,
+  //   query: query,
+  //   params: params
+  // }));
+  let t: any = await (
     await fetch("https://jopek.eu/maks/szkola/apkKli/fiaFiles/fia.php", {
       method: "POST",
       headers: {
@@ -18,8 +28,28 @@ export async function makeQuery(query: string, params: Array<any>): Promise<any>
       })
     })
   ).text();
-  // console.log(t);
-  return JSON.parse(t);
+  try {
+    t = JSON.parse(t)[0];
+  } catch (e) {
+    console.log(`dbResposnse to  "${query}"`, ` is '${t}' (typeof res ${typeof t})`);
+    console.log(`dbResposnse as object as string: '${JSON.stringify(t)}'`);
+  }
+  for (const p in t) {
+    if (["data", "gameBoard"].includes(p))
+      t[p] = JSON.parse(t[p]);
+  }
+  return [t];
+}
+
+export async function getData(gid: number): Promise<Data> {
+  let data = (await makeQuery("SELECT `data` FROM `fia` WHERE `id` = ?", [gid]))[0].data;
+  if (typeof data === "string") {
+    data = JSON.parse(data) as Data;
+    return data;
+  } else {
+    console.log(data);
+    throw new Error("Data is not a object");
+  }
 }
 
 export async function mFetch(url: string, body: object, res: Response): Promise<Response> {
@@ -31,6 +61,19 @@ export async function mFetch(url: string, body: object, res: Response): Promise<
     },
     body: JSON.stringify(body)
   }).then(fRes => Helpers.checkApiRes(fRes, res)) as Promise<Response>;
+}
+
+export function nextTurnEndsAt(): number {
+  return Date.now() + (60 * 1000);
+}
+
+export async function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+export async function waitForQueue(): Promise<void> {
+  while(global.stop === true) {
+    await sleep(200);
+  }
 }
 
 export interface Colors {
@@ -60,18 +103,49 @@ export type Data = Array<DataObject>;
 export interface DataObject {
   id: any;
   index: number;
+  ready: boolean;
   color: tColors;
   name: string;
 }
-export interface Chequer extends Coordinates { 
-  color: tColors;
-};
-
-export interface Coordinates {
-  x: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
-  y: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
+export interface GhostWhere {
+  from: "base" | "map" | "home";
+  oldIndex: number;
+  to: "base" | "map" | "home";
+  newIndex: number;
 }
-export type GameBoard = Array<Chequer>;
+export interface Ghost {
+  where: GhostWhere;
+  color: tColors;
+  coords?: Coordinates;
+}
+export interface Chequer {
+  color: tColors;
+  ghost?: Ghost; // number; // 1 | 2 | 3 | 4 | 5 | 6;
+};
+export interface Coordinates {
+  x: number; //0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
+  y: number; //0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
+}
+export interface Square extends Coordinates {
+  chequers: Array<Chequer>;
+  start: -1 | tColors;
+}
+export interface HoBSquare extends Coordinates {
+  chequer: tColors;
+  ghost?: Ghost; // number; // 1 | 2 | 3 | 4 | 5 | 6;
+}
+export interface HomesOrBases {
+  0: Array<HoBSquare>;
+  1: Array<HoBSquare>;
+  2: Array<HoBSquare>;
+  3: Array<HoBSquare>;
+}
+
+export interface GameBoard {
+  map: Array<Square>;
+  homes: HomesOrBases;
+  bases: HomesOrBases;
+};
 export interface fiaTable {
   id: number;
   data: Data;

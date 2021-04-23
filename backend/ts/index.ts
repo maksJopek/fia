@@ -6,6 +6,9 @@ import login from "./api/login";
 import startPoint from "./api/startPoint";
 import readyStateToggle from "./api/readyStateToggle";
 import getCurrentGameState from "./api/getCurrentGameState";
+import saveGameBoard from "./api/saveGameBoard";
+
+export const global = { stop: false };
 
 dotenv.config();
 const app = express();
@@ -25,6 +28,7 @@ app.get("/startPoint", startPoint)
 app.post("/login", login);
 app.post("/readyStateToggle", readyStateToggle);
 app.post("/getCurrentGameState", getCurrentGameState);
+app.post("/saveGameBoard", saveGameBoard);
 
 
 app.listen(PORT, () => {

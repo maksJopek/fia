@@ -1,16 +1,25 @@
 import { Request, Response } from "express";
-import { Data, makeQuery } from "../../../helpers/helpersBack";
+import { Data, makeQuery, getData, API_RES, GameBoard } from "../../../helpers/helpersBack";
 
 export default async function getCurrentGameState(req: Request, res: Response) {
-    if (req.session === undefined /* || req.body.state === undefined */) {
-        res.status(500);
-        res.send("");
+    // console.log("request.session", req.session)
+    if (req.session === undefined || req.session.gid === undefined) {
+        res.status(400);
+        res.send(API_RES.failure);
         return;
     }
 
-    let dbRes: {gameBoard: Data, currentPlayer: number} 
-        = (await makeQuery("SELECT `gameBoard`, `currentPlayer` FROM `fia` WHERE `id` = ?", [req.session.gid]))[0],
-        currentPlayer = dbRes.currentPlayer === req.session.index;
+    let dbRes: { gameBoard: GameBoard, currentPlayer: number, started: number, data: Data, timeTillTurnEnd: number }
+        = (await makeQuery("SELECT `gameBoard`, `currentPlayer`, `started`, `data`, `timeTillTurnEnd`"
+            + " FROM `fia` WHERE `id` = ?",
+            [req.session.gid]))[0];
+
     
-    res.send(JSON.stringify({gameBoard: dbRes.gameBoard, currentPlayer}));
+    if (dbRes.started === 0) {
+        res.send(JSON.stringify({ data: dbRes.data }));
+    } else {
+        res.send(JSON.stringify(dbRes));
+    }
+
+    
 }
