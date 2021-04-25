@@ -6,6 +6,7 @@ export default async function startGame(gid: number) {
         (await makeQuery("SELECT `gameBoard`, `data` FROM `fia` WHERE `id` = ?", [gid]))[0];
 
     for (let player of dbRes.data) {
+        player.ready = true;
         for(let square of dbRes.gameBoard.bases[player.color as keyof HomesOrBases]) {
             square.chequer = player.color;
         }

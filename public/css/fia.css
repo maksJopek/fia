@@ -7,6 +7,7 @@
   border-collapse: separate;
   padding: 0;
   border-spacing: 0;
+  opacity: 1;
 }
 .game-table tr {
   padding: 0;
@@ -53,11 +54,12 @@
 .player-name :nth-child(even) {
   float: right;
 }
-
 .chequer {
   background-size: contain;
   border-radius: 50%;
-  color: palevioletred;
+  font-size: 30px;
+  color: black;
+  -webkit-text-stroke: 5px black;
 }
 .chequer-red {
   background-image: url("https://jopek.eu/maks/szkola/apkKli/fiaFiles/chequer-red.png");

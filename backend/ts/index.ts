@@ -17,7 +17,14 @@ const PORT = 8000;
 if (!process.env.SESSION_KEY)
   throw Error("SESSION_KEY is undefined");
 
-app.use(session({ secret: process.env.SESSION_KEY, cookie: { maxAge: 60000 } }));
+app.use(session({
+  secret: process.env.SESSION_KEY,
+  saveUninitialized: true,
+  resave: true,
+  cookie: {
+    expires: new Date(Date.now() + 3600000),
+  }
+}));
 app.use(express.json());
 app.use("/", express.static("./public"));
 

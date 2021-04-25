@@ -72,7 +72,7 @@ export async function sleep(ms: number) {
 }
 export async function waitForQueue(): Promise<void> {
   while(global.stop === true) {
-    await sleep(200);
+    await sleep(50);
   }
 }
 
