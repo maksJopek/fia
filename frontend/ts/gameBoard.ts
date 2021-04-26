@@ -41,7 +41,7 @@ export default class gameBoardClass {
   }
   static removeChequer(coords: Coordinates, all: boolean) {
     let td = gameTable.getTd(coords);
-    gameBoardClass.hideChequer(coords);
+    gameBoardClass.hideChequer(coords, all);
     td.onmouseenter = () => null;
     td.onmouseleave = () => null;
     td.onclick = () => null;
@@ -51,31 +51,32 @@ export default class gameBoardClass {
     let td = gameTable.getTd(coords);
     if (td.dataset.count === undefined)
       throw new Error("td.dataset.count is undefined!!!")
-
+    
+    if(td.className === '')
+      td.classList.add("chequer");
+    
     if (td.dataset.count === '0') {
       td.classList.add("chequer-" + StartGame.colors[color]);
       td.dataset.count = '1';
       td.innerHTML = '';
     } else {
       td.dataset.count = (parseInt(td.dataset.count) + 1).toString();
-      td.innerHTML = 'x' + td.dataset.count;
+      td.innerHTML = td.dataset.count === '1' ? '' : 'x' + td.dataset.count;
     }
   }
   static hideChequer(coords: Coordinates, all = false) {
     let td = gameTable.getTd(coords);
 
-    if (td.dataset.count === '0')
-      return;
     if (td.dataset.count === undefined)
       throw new Error("td.dataset.count is undefined!!!")
 
-    if (td.dataset.count === '1' || all === true) {
-      td.className = td.className.replace(/chequer-.*/, '');
+    if (all === true || ['0', '1'].includes(td.dataset.count)) {
+      td.className = 'chequer';
       td.dataset.count = '0';
       td.innerHTML = '';
     } else {
       td.dataset.count = (parseInt(td.dataset.count) - 1).toString();
-      td.innerHTML = 'x' + td.dataset.count;
+      td.innerHTML = td.dataset.count === '1' ? '' : 'x' + td.dataset.count;
     }
   }
 }

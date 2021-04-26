@@ -1,5 +1,5 @@
 import { Coordinates, GameBoard, HomesOrBases, Square, tColors } from "../../helpers/helpersBack";
-
+import Helpers from "../../helpers/helpers.js"
 export default class Logic {
     static moveFromBase(gameBoard: GameBoard, color: tColors,) {
         let start: Square, i: number;
@@ -27,25 +27,32 @@ export default class Logic {
         return gameBoard;
     }
     static moveInMap(gameBoard: GameBoard, color: tColors, number: number) {
+        console.log("moveInMap::color ", color)
         gameBoard.map.forEach((square, i) => {
             if (square.chequers.length > 0 && square.chequers[0].color === color) {
-
                 for (let chequer of square.chequers) {
                     let x: number | undefined, y: number | undefined, coords: Coordinates | undefined, inMap: boolean,
                         homeIndex: number | undefined, befStart: number | undefined;
 
-                    gameBoard.map.forEach((square, i) => {
-                        if (square.start === color)
-                            befStart = i - 1;
-                    });
+                    if (color !== Helpers.Color.red) {
+                        gameBoard.map.forEach((square, i) => {
+                            if (square.start === color)
+                                befStart = i - 1;
+                        });
+                    } else {
+                        befStart = gameBoard.map.length - 1;
+                    }
                     if (befStart === undefined)
                         throw new Error("before start doesnt exist");
 
                     let range = (start: number, end: number) => Array.from(Array(end + 1).keys()).slice(start);
+                    console.log("range ", range(i, i + number));
+                    console.log("homeIndex ", befStart);
                     // if(i >= befStart && i + number <= befStart) {
                     if (range(i, i + number).includes(befStart)) {
+                        // debugger;
                         // homeIndex = gameBoard.map.length - i - 1 - number - 1;
-                        homeIndex = number - befStart + i;
+                        homeIndex = number - befStart + i - 1;
                         inMap = false;
 
                         if (homeIndex < gameBoard.homes[0].length) {
@@ -55,10 +62,12 @@ export default class Logic {
                         else {
                             x = y = undefined;
                         }
+                        console.log("toHome check ", { x, y, homeIndex, befStart });
                     } else {
-                        if(i + number >= gameBoard.map.length)
-                            number += i - gameBoard.map.length - 1 - number; //* -$number 'cause adding $number on 62 && 63 
-                            // i += number - gameBoard.map.length - 1 - number; //* -$number 'cause adding $number on 62 && 63 
+                        if (i + number >= gameBoard.map.length) {
+                            // debugger;
+                            number += i - gameBoard.map.length - i; //* -$i 'cause adding $i on 62 && 63 
+                        }// i += number - gameBoard.map.length - 1 - number; //* -$number 'cause adding $number on 62 && 63 
                         console.log("newIndex: ", i + number)
                         x = gameBoard.map[i + number].x;
                         y = gameBoard.map[i + number].y;
@@ -81,7 +90,6 @@ export default class Logic {
                 }
             }
         })
-
         return gameBoard;
     }
     static moveInHome(gameBoard: GameBoard, color: tColors, number: number) {

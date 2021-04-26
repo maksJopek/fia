@@ -8,8 +8,8 @@ import ghost from "./ghost.js";
 import gameBoardClass from "./gameBoard.js";
 
 export default class StartGame {
-  bgColors = ["primary", "danger", "success", "warning"];
-  static colors = ["blue", "red", "green", "yellow"];
+  bgColors = ["primary", "danger", "success", "warning", "white"];
+  static colors = ["blue", "red", "green", "yellow", "white"];
   colors = StartGame.colors;
   radius = 20;
   startInterval = () => { this.getData(); this.interval = setInterval(() => this.getData(), 2000); }
@@ -105,10 +105,11 @@ export default class StartGame {
   }
 
   rollDice = async (e: MouseEvent): Promise<void> => {
-    let number = Helpers.getRandomInt(1, 7);
+    this.btnRollDice.style.display = "none";
+    // ! let number = Helpers.getRandomInt(1, 7);
+    let number = 6;
     this.diceHash;
     this.divDice.classList.add(`dice-${number}`);
-    this.btnRollDice.style.display = "none";
     this.calcMoves(number);
   }
 
@@ -132,7 +133,7 @@ export default class StartGame {
     }
     this.mineTurn = false;
     let where = chequer.ghost.where;
-
+    let olderGameBoard = JSON.stringify(this.gameBoard);
     if (where.from === "map") {
       this.gameBoard.map[where.oldIndex].chequers.pop();
     } else if (where.from === "base") {
@@ -142,18 +143,17 @@ export default class StartGame {
     }
 
     if (where.to === "map") {
-      let mapIndex = this.gameBoard.map[where.newIndex],
-        enemyColor = mapIndex.chequers[0]?.color;
+      let enemyColor = this.gameBoard.map[where.newIndex].chequers[0]?.color;
       if (enemyColor !== this.color && enemyColor !== undefined) {
         let enemyBase = this.gameBoard.bases[enemyColor as keyof HomesOrBases];
-        for (let chequer of mapIndex.chequers) {
+        for (let chequer of this.gameBoard.map[where.newIndex].chequers) {
           let i = 0;
           for (let c of enemyBase) {
             if (c.chequer < 0) break;
             i++;
           }
           chequer.ghost = {
-            color: enemyColor, coords: { x: mapIndex.x, y: mapIndex.y },
+            color: enemyColor, coords: { x: this.gameBoard.map[where.newIndex].x, y: this.gameBoard.map[where.newIndex].y },
             where: {
               from: "map", oldIndex: where.newIndex,
               to: "base", newIndex: i
@@ -161,10 +161,9 @@ export default class StartGame {
           }
           this.doTurn(chequer, true);
         }
-        mapIndex.chequers = [];
+        this.gameBoard.map[where.newIndex].chequers = [];
       }
-
-      mapIndex.chequers.push({ color: this.color });
+      this.gameBoard.map[where.newIndex].chequers.push({ color: this.color });
     } else if (where.to === "base") {
       this.gameBoard.bases[this.color as keyof HomesOrBases][where.newIndex].chequer = this.color;
     } else {
@@ -172,16 +171,30 @@ export default class StartGame {
     }
 
     if (redraw === true) {
+      (window as any).clicked = true;
+      let won = this.gameHasBeenWon();
+      ghost.allStopBlink();
+      ghost.removeGhosts(this.gameBoard, this.color);
       gameBoardClass.drawGameBoard(this.gameBoard, this.drawChequer);
       this.sendGameBoard(false);
+      // (window as any).clicked = false;
     }
   }
 
   async hideDice(wait: boolean) {
     let diceHash = this._diceHash;
-    wait === true ? await Helpers.sleep(5000) : '';
+    wait === true ? await Helpers.sleep(2000) : '';
     if (diceHash === this.diceHash)
       this.divDice.className = this.divDice.className.replace(/dice.*/, '');
+  }
+
+  gameHasBeenWon(): boolean {
+    let home = this.gameBoard.homes[this.color as keyof HomesOrBases];
+    for(let square of home) {
+      if(square.chequer < 0)
+         return false;
+    }
+    return true;
   }
 
   async sendGameBoard(diceWait: boolean) {
@@ -217,6 +230,7 @@ export default class StartGame {
   }
 
   async getData() {
+    console.log("gettingData");
     let data: { gameBoard: GameBoard, currentPlayer: number, started: number, data: Data, timeTillTurnEnd: number }
       = await Helpers.mFetch("/getCurrentGameState", {});
     if (data.started === 1) {
@@ -227,7 +241,8 @@ export default class StartGame {
           this.mineTurn = true;
           this.gameWasStopped = false;
           this.btnRollDice.style.display = "block";
-        }// else if (JSON.stringify(data.gameBoard) !== JSON.stringify(this.gameBoard)) {
+        } /* else if (StartGame.waitForNewTurn === false) { */
+        console.log("Redrawing gameBoard - newer from server");
         this.gameBoard = data.gameBoard;
         gameBoardClass.drawGameBoard(this.gameBoard, this.drawChequer);
         // }
@@ -240,10 +255,7 @@ export default class StartGame {
       this.setOpponents(this.data, false);
     }
 
-    // TODO: Going to home
-    // TODO: Check stacking
     // TODO: Check zbijanie
-    // TODO: Going from [40] -> [0]
-    // TODO: Ending turn
+    // TODO: Check gameHasBeenWon()
   }
 }

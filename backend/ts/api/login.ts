@@ -27,7 +27,7 @@ export default async function apiLogin(req: Request, res: Response) {
       id: req.session.uid,
       index: 0,
       ready: false,
-      color: color,
+      color: Color.red,
       name: req.body.name,
     }];
     req.session.color = color;

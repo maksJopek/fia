@@ -7,7 +7,7 @@ export default async function saveGameBoard(req: Request, res: Response) {
         res.send(API_RES.failure);
         return;
     }
-
+    console.log("saving gameBoard");
     let query = "UPDATE `fia` SET `currentPlayer` = IF(`currentPlayer` + 1 = `playersCount`, 0, `currentPlayer` + 1), "
         + "`gameBoard` = ?, `timeTillTurnEnd` = ? WHERE `id` = ?"
     await makeQuery(query, [req.body.gameBoard, nextTurnEndsAt(), req.session.gid]);

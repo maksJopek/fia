@@ -11,7 +11,7 @@ export default class ghost {
             chequer.ghost?.coords === undefined ? console.log("showShost::chequer.ghost.coords === undefined", chequer.ghost?.coords === undefined) : '';
             return;
         }
-        gameBoardClass.showChequer(chequer.ghost.coords, color)
+        gameBoardClass.showChequer(chequer.ghost.coords, 4)
     }
     static hideGhost(chequer: Chequer | HoBSquare): void {
         if (chequer.ghost === undefined || chequer.ghost.coords === undefined) {
@@ -52,7 +52,7 @@ export default class ghost {
     }
     static allBlink(gameBoard: GameBoard, color: tColors) {
         for (let square of gameBoard.map) {
-            if (square.chequers.some(el => el.ghost !== undefined))
+            if (square.chequers.some(el => el.ghost !== undefined) === true)
                 ghost.blink(square);
         }
         for (let chequer of gameBoard.bases[color as keyof HomesOrBases]) {
@@ -66,7 +66,7 @@ export default class ghost {
     }
     static blink(chequer: Square | HoBSquare) {
         if (ghost.interval === undefined)
-            ghost.interval = setInterval(ghost.blinking, 1000);
+            ghost.interval = setInterval(ghost.blinking, 700);
         let td = gameTable.getTd({ x: chequer.x, y: chequer.y });
         ghost.ghostsTds.push({ td, class: td.className });
     }
@@ -78,6 +78,7 @@ export default class ghost {
     }
     static allStopBlink() {
         clearInterval(ghost.interval);
+        ghost.interval = undefined;
         ghost.hide = true;
         for (let td of ghost.ghostsTds) {
             td.td.className = td.class;

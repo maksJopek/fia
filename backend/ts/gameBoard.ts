@@ -71,25 +71,25 @@ export const gameBoard: GameBoard = {
     },
     // @ts-ignore
     homes: {
-        [Color.red]: [
+        [Color.blue]: [
             { x: 5, y: 1, chequer: -1 },
             { x: 5, y: 2, chequer: -1 },
             { x: 5, y: 3, chequer: -1 },
             { x: 5, y: 4, chequer: -1 },
         ],
-        [Color.blue]: [
+        [Color.red]: [
             { x: 1, y: 5, chequer: -1 },
             { x: 2, y: 5, chequer: -1 },
             { x: 3, y: 5, chequer: -1 },
             { x: 4, y: 5, chequer: -1 },
         ],
-        [Color.green]: [
+        [Color.yellow]: [
             { x: 5, y: 9, chequer: -1 },
             { x: 5, y: 8, chequer: -1 },
             { x: 5, y: 7, chequer: -1 },
             { x: 5, y: 6, chequer: -1 },
         ],
-        [Color.yellow]: [
+        [Color.green]: [
             { x: 9, y: 5, chequer: -1 },
             { x: 8, y: 5, chequer: -1 },
             { x: 7, y: 5, chequer: -1 },
