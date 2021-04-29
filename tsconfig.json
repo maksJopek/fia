@@ -1,7 +1,5 @@
 {
     "compilerOptions": {
-        // "rootDir": "./",
-        // "outDir": "./src/js",
         "esModuleInterop": true,
         "target": "ESNext",
         "module": "commonjs",
@@ -21,12 +19,4 @@
         "downlevelIteration": true,
         /* END MINE */
     },
-    
-    // "include": [
-    //     "src/ts/**/*"
-    // ],
-    // "exclude": [
-    //     "node_modules",
-    //     ".git"
-    // ]
 }

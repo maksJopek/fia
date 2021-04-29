@@ -16,6 +16,7 @@ export default class gameTable {
       gameTable.gameTable.appendChild(tr);
     }
   }
+  
   static getTd(coords: Coordinates): HTMLElement {
     return gameTable.gameTable.children[coords.y].children[coords.x] as HTMLElement;
   }

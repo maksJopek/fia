@@ -17,9 +17,10 @@ export default class Helpers {
           params: params
         })
       })
-    ).text();
+    ).json();
     // console.log(t);
-    return JSON.parse(t);
+    // return JSON.parse(t);
+    return t;
   }
 
   static dbResToFiaTable(dbRes: dbRes): fiaTable {

@@ -1,5 +1,4 @@
-import { } from "../../helpers/helpers";
-import { makeQuery, nextTurnEndsAt, Color, GameBoard, Chequer, Coordinates, Data, getData, HomesOrBases, Square, tColors } from "../../helpers/helpersBack";
+import { makeQuery, nextTurnEndsAt, GameBoard, Data, HomesOrBases } from "../../helpers/helpersBack";
 
 export default async function startGame(gid: number) {
     let dbRes: {gameBoard: GameBoard, data: Data} = 
@@ -12,6 +11,6 @@ export default async function startGame(gid: number) {
         }
     }
 
-    await makeQuery("UPDATE `fia` SET `gameBoard` = ?, `started` = 1, `timeTillTurnEnd` = ? WHERE `id`= ?", 
-                    [dbRes.gameBoard, nextTurnEndsAt(), gid]);
+    await makeQuery("UPDATE `fia` SET `gameBoard` = ?, `started` = 1, `timeTillTurnEnd` = ?, `data` = ? WHERE `id`= ?", 
+                    [dbRes.gameBoard, nextTurnEndsAt(), dbRes.data, gid]);
 }

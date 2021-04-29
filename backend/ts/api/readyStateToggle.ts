@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { makeQuery, Data, getData, API_RES, waitForQueue } from "../../../helpers/helpersBack";
+import { makeQuery, Data, API_RES, waitForQueue } from "../../../helpers/helpersBack";
 import startGame from "../startGame";
 import {global} from "../index";
 
@@ -21,7 +21,6 @@ export default async function (req: Request, res: Response) {
         started = false;
 
     if (data.started === 0) {
-
         for (let player of data.data) {
             if (player.id === req.session.uid)
                 player.ready = req.body.state ? true : false;
@@ -36,7 +35,6 @@ export default async function (req: Request, res: Response) {
             startGame(req.session.gid);
             started = true;
         }
-
     }
     global.stop = false;
     res.send(`{"success": true, "started": ${started}}`);

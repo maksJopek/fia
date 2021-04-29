@@ -25,6 +25,7 @@ export default class Timer {
       this.divTimer.innerHTML = secondsElapsed.toString();
     }
   }
+  
   stop(): void {
     this.divTimer.innerHTML = '';
     clearInterval(this.interval);

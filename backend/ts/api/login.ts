@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { fiaTable, dbRes, Color, Colors, Helpers, makeQuery, Chequer, tColors, waitForQueue } from "../../../helpers/helpersBack";
+import { fiaTable, Helpers, makeQuery, tColors, waitForQueue } from "../../../helpers/helpersBack";
 import startGame from "../startGame";
 import { global } from "../index";
 
@@ -27,23 +27,18 @@ export default async function apiLogin(req: Request, res: Response) {
       id: req.session.uid,
       index: 0,
       ready: false,
-      color: Color.red,
+      color: color,
       name: req.body.name,
     }];
+
     req.session.color = color;
 
     await makeQuery('INSERT INTO `fia`(`data`) VALUES (?)', [row.data]);
-    req.session.gid = (await makeQuery('SELECT `id` FROM `fia` WHERE `data`= ?', [row.data]) as any)[0].id;
+    req.session.gid = (await makeQuery('SELECT `id` FROM `fia` WHERE `data`= ?', [row.data]))[0].id;
   } else {
-    // row = Helpers.dbResToFiaTable(dbRes[0]);
     row = dbRes[0];
     let playersColors: Array<tColors> = [],
       colors = [...Array(4).keys()];
-
-    if (row.data.filter(el => el.id !== req.session?.uid).length === 0) {
-      res.send(JSON.stringify({ data: row.data, uid: req.session.uid }));
-      return;
-    }
 
     for (let playerData of row.data)
       playersColors.push(playerData.color);

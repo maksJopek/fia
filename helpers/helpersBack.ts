@@ -118,6 +118,11 @@ export interface Ghost {
   color: tColors;
   coords?: Coordinates;
 }
+export interface OldTd {
+  className: string;
+  innerHTML: string;
+  count: string;
+}
 export interface Chequer {
   color: tColors;
   ghost?: Ghost; // number; // 1 | 2 | 3 | 4 | 5 | 6;

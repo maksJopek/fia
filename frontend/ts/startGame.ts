@@ -29,6 +29,8 @@ export default class StartGame {
   btnRollDice!: HTMLButtonElement;
   divDice!: HTMLDivElement;
 
+  voices!: Array<SpeechSynthesisVoice>;
+
   mineTurn = false;
   gameStarted = false;
   toggleStop = false;
@@ -39,6 +41,10 @@ export default class StartGame {
 
   async init(data: { data: Data, uid: string }) {
     document.body.innerHTML = await (await fetch("/map.html")).text();
+
+    if (speechSynthesis.onvoiceschanged !== undefined)
+      speechSynthesis.onvoiceschanged = () => this.voices = speechSynthesis.getVoices();
+    this.voices = speechSynthesis.getVoices();
 
     this.uid = data.uid;
     this.data = data.data;
@@ -69,8 +75,9 @@ export default class StartGame {
 
       if (player.ready === true || this.gameStarted === true) {
         tds[i].classList.add("bg-" + this.bgColors[player.color]);
-        if (this.uid === player.id)
-          this.inpStateToggle.checked = true;
+        if (this.uid === player.id) {
+          this.blockInpStateToggle()
+        }
       }
       else
         tds[i].classList.add("bg-secondary");
@@ -87,7 +94,7 @@ export default class StartGame {
   }
 
   readyStateToggle = async (e: MouseEvent): Promise<void> => {
-    if (this.toggleStop) {
+    if (this.toggleStop === true) {
       this.inpStateToggle.checked = true;
       return;
     }
@@ -104,13 +111,48 @@ export default class StartGame {
     this.startInterval();
   }
 
+  blockInpStateToggle() {
+    this.inpStateToggle.checked = true;
+    this.toggleStop = true;
+  }
   rollDice = async (e: MouseEvent): Promise<void> => {
     this.btnRollDice.style.display = "none";
-    // ! let number = Helpers.getRandomInt(1, 7);
-    let number = 6;
+    let number = Helpers.getRandomInt(1, 7);
+    
+    if((window as any).number !== undefined)
+      number = (window as any).number;
+    
+    this.say(number.toString());
     this.diceHash;
     this.divDice.classList.add(`dice-${number}`);
     this.calcMoves(number);
+  }
+
+  async say(text: string) {
+    if (!("speechSynthesis" in window)) {
+      // console.log("Client does not support SpeechSynthesis")
+      return;
+    }
+    let utterance = new SpeechSynthesisUtterance(),
+      voice: SpeechSynthesisVoice | undefined = undefined,
+      preferredVoices = ["sv-SE", "se-SE"];
+
+    for (let prefVoice of preferredVoices) {
+      voice = this.voices.find(el => el.lang === prefVoice);
+      if (voice !== undefined)
+        break;
+    }
+    if (voice === undefined)
+      voice = this.voices.find(el => el.default === true);
+    
+    if (voice === undefined) {
+      // console.log("Client does not have any voices in SpeechSynthesis");
+      return;
+    }
+
+    utterance.voice = voice;
+    utterance.text = text;
+    speechSynthesis.speak(utterance);
   }
 
   calcMoves(number: number) {
@@ -127,13 +169,13 @@ export default class StartGame {
       ghost.allBlink(this.gameBoard, this.color);
   }
 
-  doTurn(chequer: Chequer | HoBSquare, redraw = true): void {
+  doTurn(chequer: Chequer | HoBSquare): void {
     if (chequer.ghost === undefined || chequer.ghost.coords === undefined) {
       return;
     }
     this.mineTurn = false;
     let where = chequer.ghost.where;
-    let olderGameBoard = JSON.stringify(this.gameBoard);
+
     if (where.from === "map") {
       this.gameBoard.map[where.oldIndex].chequers.pop();
     } else if (where.from === "base") {
@@ -145,23 +187,15 @@ export default class StartGame {
     if (where.to === "map") {
       let enemyColor = this.gameBoard.map[where.newIndex].chequers[0]?.color;
       if (enemyColor !== this.color && enemyColor !== undefined) {
-        let enemyBase = this.gameBoard.bases[enemyColor as keyof HomesOrBases];
-        for (let chequer of this.gameBoard.map[where.newIndex].chequers) {
-          let i = 0;
-          for (let c of enemyBase) {
-            if (c.chequer < 0) break;
-            i++;
-          }
-          chequer.ghost = {
-            color: enemyColor, coords: { x: this.gameBoard.map[where.newIndex].x, y: this.gameBoard.map[where.newIndex].y },
-            where: {
-              from: "map", oldIndex: where.newIndex,
-              to: "base", newIndex: i
-            }
-          }
-          this.doTurn(chequer, true);
+        let enemyBase = this.gameBoard.bases[enemyColor as keyof HomesOrBases],
+          square = this.gameBoard.map[where.newIndex];
+
+        for (let i = 0, j = 0; i < square.chequers.length; i++, j = 0) {
+          while(enemyBase[j].chequer >= 0)
+            j++;
+          enemyBase[j].chequer = enemyColor;
         }
-        this.gameBoard.map[where.newIndex].chequers = [];
+        square.chequers = [];
       }
       this.gameBoard.map[where.newIndex].chequers.push({ color: this.color });
     } else if (where.to === "base") {
@@ -170,17 +204,18 @@ export default class StartGame {
       this.gameBoard.homes[this.color as keyof HomesOrBases][where.newIndex].chequer = this.color;
     }
 
-    if (redraw === true) {
-      (window as any).clicked = true;
-      let won = this.gameHasBeenWon();
-      ghost.allStopBlink();
-      ghost.removeGhosts(this.gameBoard, this.color);
-      gameBoardClass.drawGameBoard(this.gameBoard, this.drawChequer);
-      this.sendGameBoard(false);
-      // (window as any).clicked = false;
+    (window as any).clicked = true;
+    let won = this.gameHasBeenWon();
+    if (won === true) {
+      alert("WON!WON!WON!WON!WON!WON!");
+      throw new Error("WON!WON!WON!WON!WON!WON!");
     }
-  }
 
+    ghost.allStopBlink();
+    ghost.removeGhosts(this.gameBoard, this.color);
+    gameBoardClass.drawGameBoard(this.gameBoard, this.drawChequer);
+    this.sendGameBoard(false);
+  }
   async hideDice(wait: boolean) {
     let diceHash = this._diceHash;
     wait === true ? await Helpers.sleep(2000) : '';
@@ -190,14 +225,15 @@ export default class StartGame {
 
   gameHasBeenWon(): boolean {
     let home = this.gameBoard.homes[this.color as keyof HomesOrBases];
-    for(let square of home) {
-      if(square.chequer < 0)
-         return false;
+    for (let square of home) {
+      if (square.chequer < 0)
+        return false;
     }
     return true;
   }
 
   async sendGameBoard(diceWait: boolean) {
+    this.btnRollDice.style.display = "none";
     ghost.allStopBlink();
     ghost.removeGhosts(this.gameBoard, this.color);
     this.timer.stop();
@@ -221,6 +257,7 @@ export default class StartGame {
     if (this.gameWasStopped !== true)
       this.sendGameBoard(false);
   }
+
   _diceHash = 0;
   get diceHash(): number {
     if (this._diceHash >= Number.MAX_SAFE_INTEGER)
@@ -230,19 +267,18 @@ export default class StartGame {
   }
 
   async getData() {
-    console.log("gettingData");
     let data: { gameBoard: GameBoard, currentPlayer: number, started: number, data: Data, timeTillTurnEnd: number }
       = await Helpers.mFetch("/getCurrentGameState", {});
+    
     if (data.started === 1) {
       this.gameStarted = true;
       if (this.oldIndex !== data.currentPlayer) {
         this.oldIndex = data.currentPlayer;
-        if (data.currentPlayer === this.index/*  && this.mineTurn === false */) {
+        if (data.currentPlayer === this.index) {
           this.mineTurn = true;
           this.gameWasStopped = false;
           this.btnRollDice.style.display = "block";
         } /* else if (StartGame.waitForNewTurn === false) { */
-        console.log("Redrawing gameBoard - newer from server");
         this.gameBoard = data.gameBoard;
         gameBoardClass.drawGameBoard(this.gameBoard, this.drawChequer);
         // }
@@ -255,7 +291,6 @@ export default class StartGame {
       this.setOpponents(this.data, false);
     }
 
-    // TODO: Check zbijanie
     // TODO: Check gameHasBeenWon()
   }
 }

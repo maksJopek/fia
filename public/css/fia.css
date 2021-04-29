@@ -29,7 +29,6 @@
   margin: 50px auto;
   height: 100px;
   width: 100px;
-  border: 2px solid blue;
   background-size: contain;
 }
 .dice-1 {
@@ -79,5 +78,9 @@
 }
 .chequer-white {
   background-color: white;
+  border: 4px solid black;
+}
+.chequer-pink {
+  background-color: rgb(255, 0, 200);
   border: 4px solid black;
 }
