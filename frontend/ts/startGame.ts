@@ -40,7 +40,7 @@ export default class StartGame {
   }
 
   async init(data: { data: Data, uid: string }) {
-    document.body.innerHTML = await (await fetch("/map.html")).text();
+    document.body.innerHTML = await (await fetch("/fia/map.html")).text();
 
     if (speechSynthesis.onvoiceschanged !== undefined)
       speechSynthesis.onvoiceschanged = () => this.voices = speechSynthesis.getVoices();
@@ -99,7 +99,7 @@ export default class StartGame {
       return;
     }
     this.toggleStop = true;
-    let res = await Helpers.mFetch("/readyStateToggle", {
+    let res = await Helpers.mFetch("/fia/readyStateToggle", {
       state: this.inpStateToggle.checked
     });
     if (res.started === true)
@@ -118,10 +118,7 @@ export default class StartGame {
   rollDice = async (e: MouseEvent): Promise<void> => {
     this.btnRollDice.style.display = "none";
     let number = Helpers.getRandomInt(1, 7);
-    
-    if((window as any).number !== undefined)
-      number = (window as any).number;
-    
+
     this.say(number.toString());
     this.diceHash;
     this.divDice.classList.add(`dice-${number}`);
@@ -144,7 +141,7 @@ export default class StartGame {
     }
     if (voice === undefined)
       voice = this.voices.find(el => el.default === true);
-    
+
     if (voice === undefined) {
       // console.log("Client does not have any voices in SpeechSynthesis");
       return;
@@ -169,7 +166,7 @@ export default class StartGame {
       ghost.allBlink(this.gameBoard, this.color);
   }
 
-  doTurn(chequer: Chequer | HoBSquare): void {
+  async doTurn(chequer: Chequer | HoBSquare): Promise<void> {
     if (chequer.ghost === undefined || chequer.ghost.coords === undefined) {
       return;
     }
@@ -191,7 +188,7 @@ export default class StartGame {
           square = this.gameBoard.map[where.newIndex];
 
         for (let i = 0, j = 0; i < square.chequers.length; i++, j = 0) {
-          while(enemyBase[j].chequer >= 0)
+          while (enemyBase[j].chequer >= 0)
             j++;
           enemyBase[j].chequer = enemyColor;
         }
@@ -204,16 +201,22 @@ export default class StartGame {
       this.gameBoard.homes[this.color as keyof HomesOrBases][where.newIndex].chequer = this.color;
     }
 
-    (window as any).clicked = true;
+    chequer.ghost = undefined;
     let won = this.gameHasBeenWon();
-    if (won === true) {
-      alert("WON!WON!WON!WON!WON!WON!");
-      throw new Error("WON!WON!WON!WON!WON!WON!");
-    }
 
     ghost.allStopBlink();
     ghost.removeGhosts(this.gameBoard, this.color);
     gameBoardClass.drawGameBoard(this.gameBoard, this.drawChequer);
+    if (won === true) {
+      clearInterval(this.interval);
+      this.btnRollDice.style.display = "none";
+      this.timer.stop();
+      await this.sendGameBoard(false);
+      await Helpers.mFetch("/fia/won", { index: this.index });
+      await Helpers.mFetch("/fia/reset", {});
+      alert("Du vann spelet !!!");
+      return;
+    }
     this.sendGameBoard(false);
   }
   async hideDice(wait: boolean) {
@@ -239,7 +242,7 @@ export default class StartGame {
     this.timer.stop();
     this.gameWasStopped = true;
     this.hideDice(diceWait);
-    await Helpers.mFetch("/saveGameBoard", { gameBoard: this.gameBoard });
+    await Helpers.mFetch("/fia/saveGameBoard", { gameBoard: this.gameBoard });
   }
 
   drawChequer = (coords: Coordinates, color: tColors, chequer: Chequer | HoBSquare): void => {
@@ -267,9 +270,21 @@ export default class StartGame {
   }
 
   async getData() {
-    let data: { gameBoard: GameBoard, currentPlayer: number, started: number, data: Data, timeTillTurnEnd: number }
-      = await Helpers.mFetch("/getCurrentGameState", {});
-    
+    let data: { gameBoard: GameBoard, currentPlayer: number, started: number, data: Data, timeTillTurnEnd: number, winner: null | number }
+      = await Helpers.mFetch("/fia/getCurrentGameState", {});
+    console.log("Data fetched");
+
+    if (data.started === 1 && data.winner !== null) {
+      clearInterval(this.interval);
+      this.btnRollDice.style.display = "none";
+      this.timer.stop();
+      let winnerName = this.data.filter(el => el.index === data.winner)[0].name;
+      gameBoardClass.drawGameBoard(data.gameBoard, this.drawChequer);
+      alert(`Spelaren ${winnerName} vann spelet!!!`);
+      await Helpers.mFetch("/fia/reset", {});
+      return;
+    }
+
     if (data.started === 1) {
       this.gameStarted = true;
       if (this.oldIndex !== data.currentPlayer) {
@@ -290,7 +305,5 @@ export default class StartGame {
       this.data = data.data;
       this.setOpponents(this.data, false);
     }
-
-    // TODO: Check gameHasBeenWon()
   }
 }

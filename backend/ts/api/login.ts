@@ -32,6 +32,7 @@ export default async function apiLogin(req: Request, res: Response) {
     }];
 
     req.session.color = color;
+    req.session.index = 0;
 
     await makeQuery('INSERT INTO `fia`(`data`) VALUES (?)', [row.data]);
     req.session.gid = (await makeQuery('SELECT `id` FROM `fia` WHERE `data`= ?', [row.data]))[0].id;

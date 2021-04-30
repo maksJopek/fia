@@ -18,15 +18,11 @@ export default class Helpers {
         })
       })
     ).json();
-    // console.log(t);
-    // return JSON.parse(t);
     return t;
   }
 
   static dbResToFiaTable(dbRes: dbRes): fiaTable {
     if (typeof dbRes.data === "string") {
-      console.log("dbRes.data: ", dbRes.data); 
-      console.log("dbRes.data as string: ", JSON.stringify(dbRes.data)); 
       dbRes.data = JSON.parse(dbRes.data);
     }
     else
@@ -40,7 +36,6 @@ export default class Helpers {
     if (res.success === false) {
       if (Object.keys(nRes).length === 0) {
         // @ts-ignore - here error is because backend tsc is checking this file, where lib: DOM is not present 
-        // alert("API Error!");
         throw new Error("API Error!");
       } else {
         nRes.status(500);

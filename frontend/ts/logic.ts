@@ -31,7 +31,7 @@ export default class Logic {
       if (square.chequers.length > 0 && square.chequers[0].color === color) {
         for (let chequer of square.chequers) {
           let x: number | undefined, y: number | undefined, coords: Coordinates | undefined, inMap: boolean,
-            homeIndex: number | undefined, befStart: number | undefined;
+            homeIndex: number | undefined, befStart: number | undefined, normalTurn = true;
 
           if (color !== Helpers.Color.red) {
             gameBoard.map.forEach((square, i) => {
@@ -45,25 +45,41 @@ export default class Logic {
             throw new Error("before start doesnt exist");
 
           let range = (start: number, end: number) => Array.from(Array(end + 1).keys()).slice(start);
-          // if(i >= befStart && i + number <= befStart) {
+          // if(i >= befStart && i + number <= befStart) {  
+          inMap = true;
           if (range(i, i + number).includes(befStart)) {
             homeIndex = number - befStart + i - 1;
             inMap = false;
 
-            if (homeIndex < gameBoard.homes[0].length) {
-              x = gameBoard.homes[color as keyof HomesOrBases][homeIndex].x;
-              y = gameBoard.homes[color as keyof HomesOrBases][homeIndex].y;
+            if (homeIndex !== -1) {
+              normalTurn = false;
+
+              if (homeIndex < gameBoard.homes[0].length) {
+                x = gameBoard.homes[color as keyof HomesOrBases][homeIndex].x;
+                y = gameBoard.homes[color as keyof HomesOrBases][homeIndex].y;
+                let homeSquare = gameBoard.homes[color as keyof HomesOrBases][homeIndex];
+                if (homeSquare.chequer >= 0) { x = y = homeIndex = undefined; }
+              }
+              else {
+                x = y = undefined;
+              }
+            }
+          }
+          if (normalTurn === true) {
+            if (homeIndex === -1) {
+              x = gameBoard.map[befStart].x;
+              y = gameBoard.map[befStart].y;
+              inMap = true;
+              homeIndex = undefined;
             }
             else {
-              x = y = undefined;
-            }
-          } else {
-            if (i + number >= gameBoard.map.length)
-              number += i - gameBoard.map.length - i; //* -$i 'cause adding $i on 62 && 63 
+              if (i + number >= gameBoard.map.length)
+                number += i - gameBoard.map.length - i; //* -$i 'cause adding $i on 62 && 63 
 
-            x = gameBoard.map[i + number].x;
-            y = gameBoard.map[i + number].y;
-            inMap = true;
+              x = gameBoard.map[i + number].x;
+              y = gameBoard.map[i + number].y;
+              inMap = true;
+            }
           }
 
           if (x === undefined || y === undefined)
@@ -71,14 +87,24 @@ export default class Logic {
           else
             coords = { x, y };
 
-          chequer.ghost = {
-            where: {
-              from: "map", oldIndex: i,
-              to: (inMap === true ? "map" : "home"),
-              newIndex: homeIndex || i + number
-            },
-            color: color,
-            coords,
+          let newIndex: number;
+          if (homeIndex !== undefined)
+            newIndex = homeIndex;
+          else
+            newIndex = i + number;
+
+          if (coords !== undefined) {
+            chequer.ghost = {
+              where: {
+                from: "map", oldIndex: i,
+                to: (inMap === true ? "map" : "home"),
+                newIndex: newIndex
+              },
+              color: color,
+              coords,
+            } 
+          } else {
+            chequer.ghost = undefined;
           }
         }
       }
@@ -91,7 +117,7 @@ export default class Logic {
     home.forEach((chequer, i) => {
       if (chequer.chequer > -1) {
         let x: number | undefined, y: number | undefined, coords: Coordinates | undefined;
-        if (home[i + number] !== undefined) {
+        if (home[i + number] !== undefined && home[i + number].chequer < 0) {
           x = home[i + number].x;
           y = home[i + number].y;
         } else {
@@ -103,14 +129,18 @@ export default class Logic {
         else
           coords = { x, y };
 
-        chequer.ghost = {
-          where: {
-            from: "home", oldIndex: i,
-            to: "home", newIndex: i + number
-          },
-          color: color,
-          coords,
-        };
+        if (coords !== undefined) {
+          chequer.ghost = {
+            where: {
+              from: "home", oldIndex: i,
+              to: "home", newIndex: i + number
+            },
+            color: color,
+            coords,
+          };
+        } else {
+          chequer.ghost = undefined;
+        }
       }
     });
 

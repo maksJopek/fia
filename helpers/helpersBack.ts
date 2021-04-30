@@ -9,11 +9,6 @@ export const API_RES = {
   failure: '{"success": false}',
 };
 export async function makeQuery(query: string, params: Array<any>): Promise<Array<any>> {
-  // console.log("params are ", JSON.stringify({
-  //   apiKey: process.env.API_KEY,
-  //   query: query,
-  //   params: params
-  // }));
   let t: any = await (
     await fetch("https://jopek.eu/maks/szkola/apkKli/fiaFiles/fia.php", {
       method: "POST",
@@ -47,7 +42,6 @@ export async function getData(gid: number): Promise<Data> {
     data = JSON.parse(data) as Data;
     return data;
   } else {
-    console.log(data);
     throw new Error("Data is not a object");
   }
 }
@@ -125,7 +119,7 @@ export interface OldTd {
 }
 export interface Chequer {
   color: tColors;
-  ghost?: Ghost; // number; // 1 | 2 | 3 | 4 | 5 | 6;
+  ghost?: Ghost;
 };
 export interface Coordinates {
   x: number; //0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
@@ -137,7 +131,7 @@ export interface Square extends Coordinates {
 }
 export interface HoBSquare extends Coordinates {
   chequer: tColors;
-  ghost?: Ghost; // number; // 1 | 2 | 3 | 4 | 5 | 6;
+  ghost?: Ghost;
 }
 export interface HomesOrBases {
   0: Array<HoBSquare>;

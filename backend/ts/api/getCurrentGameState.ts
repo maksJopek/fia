@@ -8,8 +8,8 @@ export default async function getCurrentGameState(req: Request, res: Response) {
         return;
     }
 
-    let dbRes: { gameBoard: GameBoard, currentPlayer: number, started: number, data: Data, timeTillTurnEnd: number }
-        = (await makeQuery("SELECT `gameBoard`, `currentPlayer`, `started`, `data`, `timeTillTurnEnd`"
+    let dbRes: { gameBoard: GameBoard, currentPlayer: number, started: number, data: Data, timeTillTurnEnd: number, winner: null | number }
+        = (await makeQuery("SELECT `gameBoard`, `currentPlayer`, `started`, `data`, `timeTillTurnEnd`, `winner`"
             + " FROM `fia` WHERE `id` = ?",
             [req.session.gid]))[0];
     

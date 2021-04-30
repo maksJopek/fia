@@ -10,7 +10,8 @@
     "start:build-front": "tsc -p ./frontend/tsconfig.json -w",
     "start:build-back": "tsc -p ./backend/tsconfig.json -w",
     "start:start": "nodemon ./backend/js/backend/ts/index.js",
-    "start": "concurrently yarn:start:*"
+    "start-dev": "concurrently yarn:start:*",
+    "start-prod": "node ./backend/js/backend/ts/index.js"
   },
   "dependencies": {
     "dotenv": "^8.2.0",

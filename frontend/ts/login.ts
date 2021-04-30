@@ -12,29 +12,30 @@ class Login {
   static clicked = false;
 
   static async start() {
-    let res = await (await fetch("/startPoint")).json();
+    let res = await (await fetch("/fia/startPoint")).json();
     if (res.status === true) {
       new StartGame({ data: res.data.data, uid: res.uid });
     } else {
       document.body.innerHTML = Login.html;
       document.getElementsByTagName("button")[0].onclick = () => Login.login();
-
-      // !!
-      // document.getElementsByTagName("input")[0].value = "maks " + Helpers.getRandomInt(1, 100);
-      // document.title = document.getElementsByTagName("input")[0].value;
-      // document.getElementsByTagName("button")[0].click();
     }
   }
 
   static async login(username = "") {
-    if(Login.clicked === true) 
+    if (Login.clicked === true)
       return;
-    
-    Login.clicked = true;
+
     if (username === "")
       username = document.getElementsByTagName("input")[0].value;
 
-    let res = await Helpers.mFetch("/login", { name: username });
+    if (username.length > 15) {
+      alert("Ditt namn är för långt!");
+      return;
+    }
+    
+    Login.clicked = true;
+
+    let res = await Helpers.mFetch("/fia/login", { name: username });
     new StartGame(res);
   }
 }

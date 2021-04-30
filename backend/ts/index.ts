@@ -7,6 +7,8 @@ import startPoint from "./api/startPoint";
 import readyStateToggle from "./api/readyStateToggle";
 import getCurrentGameState from "./api/getCurrentGameState";
 import saveGameBoard from "./api/saveGameBoard";
+import won from "./api/won";
+import reset from "./api/reset";
 
 export const global = { stop: false };
 
@@ -36,6 +38,8 @@ app.post("/login", login);
 app.post("/readyStateToggle", readyStateToggle);
 app.post("/getCurrentGameState", getCurrentGameState);
 app.post("/saveGameBoard", saveGameBoard);
+app.post("/won", won);
+app.post("/reset", reset);
 
 app.listen(PORT, () => {
   console.log(`[server]: Server is running at https://localhost:${PORT}`);
