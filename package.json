@@ -4,14 +4,16 @@
   "repository": "git@github.com:maksJopek/fia.git",
   "author": "Maks Jopek <maks@jopek.eu>",
   "license": "GPL-3.0",
-  "main": "./backend/js/index.js",
+  "main": "./backend/js/backend/ts/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start:build-front": "tsc -p ./frontend/tsconfig.json -w",
     "start:build-back": "tsc -p ./backend/tsconfig.json -w",
     "start:start": "nodemon ./backend/js/backend/ts/index.js",
-    "start-dev": "concurrently yarn:start:*",
-    "start-prod": "node ./backend/js/backend/ts/index.js"
+    "start-dev": "concurrently pnpm:start:*",
+    "start-prod": "node ./backend/js/backend/ts/index.js",
+    "start": "pnpm start-dev",
+    "dev": "pnpm start-dev"
   },
   "dependencies": {
     "dotenv": "^8.2.0",

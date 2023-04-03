@@ -40,7 +40,7 @@ export default class StartGame {
   }
 
   async init(data: { data: Data, uid: string }) {
-    document.body.innerHTML = await (await fetch("/fia/map.html")).text();
+    document.body.innerHTML = await (await fetch("map.html")).text();
 
     if (speechSynthesis.onvoiceschanged !== undefined)
       speechSynthesis.onvoiceschanged = () => this.voices = speechSynthesis.getVoices();
@@ -99,7 +99,7 @@ export default class StartGame {
       return;
     }
     this.toggleStop = true;
-    let res = await Helpers.mFetch("/fia/readyStateToggle", {
+    let res = await Helpers.mFetch("readyStateToggle", {
       state: this.inpStateToggle.checked
     });
     if (res.started === true)
@@ -117,7 +117,9 @@ export default class StartGame {
   }
   rollDice = async (e: MouseEvent): Promise<void> => {
     this.btnRollDice.style.display = "none";
-    let number = Helpers.getRandomInt(1, 7);
+    const oldNumber = localStorage.getItem("number");
+    let number = oldNumber ? parseInt(oldNumber) : Helpers.getRandomInt(1, 7);
+    localStorage.setItem("number", number.toString());
 
     this.say(number.toString());
     this.diceHash;
@@ -212,8 +214,8 @@ export default class StartGame {
       this.btnRollDice.style.display = "none";
       this.timer.stop();
       await this.sendGameBoard(false);
-      await Helpers.mFetch("/fia/won", { index: this.index });
-      await Helpers.mFetch("/fia/reset", {});
+      await Helpers.mFetch("won", { index: this.index });
+      await Helpers.mFetch("reset", {});
       alert("Du vann spelet !!!");
       return;
     }
@@ -242,7 +244,8 @@ export default class StartGame {
     this.timer.stop();
     this.gameWasStopped = true;
     this.hideDice(diceWait);
-    await Helpers.mFetch("/fia/saveGameBoard", { gameBoard: this.gameBoard });
+    localStorage.removeItem("number");
+    await Helpers.mFetch("saveGameBoard", { gameBoard: this.gameBoard });
   }
 
   drawChequer = (coords: Coordinates, color: tColors, chequer: Chequer | HoBSquare): void => {
@@ -271,7 +274,7 @@ export default class StartGame {
 
   async getData() {
     let data: { gameBoard: GameBoard, currentPlayer: number, started: number, data: Data, timeTillTurnEnd: number, winner: null | number }
-      = await Helpers.mFetch("/fia/getCurrentGameState", {});
+      = await Helpers.mFetch("getCurrentGameState", {});
     console.log("Data fetched");
 
     if (data.started === 1 && data.winner !== null) {
@@ -281,7 +284,7 @@ export default class StartGame {
       let winnerName = this.data.filter(el => el.index === data.winner)[0].name;
       gameBoardClass.drawGameBoard(data.gameBoard, this.drawChequer);
       alert(`Spelaren ${winnerName} vann spelet!!!`);
-      await Helpers.mFetch("/fia/reset", {});
+      await Helpers.mFetch("reset", {});
       return;
     }
 

@@ -12,7 +12,7 @@ class Login {
   static clicked = false;
 
   static async start() {
-    let res = await (await fetch("/fia/startPoint")).json();
+    let res = await (await fetch("startPoint")).json();
     if (res.status === true) {
       new StartGame({ data: res.data.data, uid: res.uid });
     } else {
@@ -32,10 +32,10 @@ class Login {
       alert("Ditt namn är för långt!");
       return;
     }
-    
+
     Login.clicked = true;
 
-    let res = await Helpers.mFetch("/fia/login", { name: username });
+    let res = await Helpers.mFetch("login", { name: username });
     new StartGame(res);
   }
 }

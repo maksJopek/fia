@@ -12,7 +12,7 @@ export default async function getCurrentGameState(req: Request, res: Response) {
         = (await makeQuery("SELECT `gameBoard`, `currentPlayer`, `started`, `data`, `timeTillTurnEnd`, `winner`"
             + " FROM `fia` WHERE `id` = ?",
             [req.session.gid]))[0];
-    
+
     if (dbRes.started === 0) {
         res.send(JSON.stringify({ data: dbRes.data }));
     } else {

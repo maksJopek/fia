@@ -19,6 +19,7 @@ export default async function apiLogin(req: Request, res: Response) {
 
   let dbRes = (await makeQuery("SELECT * FROM `fia` WHERE `started`= 0 LIMIT 1", [])) as Array<fiaTable>,
     row: fiaTable;
+
   if (dbRes[0] === undefined) {
     let color = Helpers.getRandomInt(0, 4);
     row = {} as fiaTable;

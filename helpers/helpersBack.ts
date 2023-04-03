@@ -10,7 +10,7 @@ export const API_RES = {
 };
 export async function makeQuery(query: string, params: Array<any>): Promise<Array<any>> {
   let t: any = await (
-    await fetch("https://jopek.eu/maks/szkola/apkKli/fiaFiles/fia.php", {
+    await fetch("http://127.0.0.1:8001/fia.php", {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -65,7 +65,7 @@ export async function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 export async function waitForQueue(): Promise<void> {
-  while(global.stop === true) {
+  while (global.stop === true) {
     await sleep(50);
   }
 }
