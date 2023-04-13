@@ -15,3 +15,5 @@ To start:
 - set secure API_KEY in /public/php/dbCredentials.php
 - run `start-node` in /
 - and `start-php` in / simultaneously in another terminal
+
+![Screenshot of the game](screenshot.png)

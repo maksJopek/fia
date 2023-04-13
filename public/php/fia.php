@@ -3,7 +3,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 $req = json_decode(file_get_contents("php://input"));
-require_once "dbCredentials.php";
+require_once "../../backend/dbCredentials.php";
 
 if ($req->apiKey === $apiKey) {
 	$http = isset($_SERVER["HTTPS"]) ? "https" : "http";
