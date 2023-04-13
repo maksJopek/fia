@@ -8,7 +8,7 @@ require_once "dbCredentials.php";
 if ($req->apiKey === $apiKey) {
 	$http = isset($_SERVER["HTTPS"]) ? "https" : "http";
 	header("Access-Control-Allow-Origin: $http://localhost:8000");
-	$pdo = new PDO("mysql:dbname=ClientApps;host=localhost;charset=utf8mb4", $dbUser, $dbPassword);
+	$pdo = new PDO("mysql:dbname=$dbName;host=localhost;charset=utf8mb4", $dbUser, $dbPassword);
 	$pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 	$stmt = $pdo->prepare($req->query);
 	try {

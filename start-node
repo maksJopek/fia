@@ -1,0 +1,8 @@
+#!/bin/sh
+export SESSION_KEY="zaq1@WSX"
+
+api_key="$(awk '/api/ { print $3 }' public/php/dbCredentials.php)"
+api_key="${api_key#'"'}"
+api_key="${api_key%'";'}"
+
+API_KEY="$api_key" pnpm dev
